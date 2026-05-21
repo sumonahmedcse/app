@@ -50,27 +50,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _quickLogin(String email, String password) async {
-    _emailController.text = email;
-    _passwordController.text = password;
-    
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.signIn(email, password);
-
-    if (mounted) {
-      if (success) {
-        _navigateUser(authProvider.currentUser);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Login Failed'),
-            backgroundColor: AppTheme.rejectedColor,
-          ),
-        );
-      }
-    }
-  }
-
   void _navigateUser(UserModel? user) {
     if (user == null) return;
     
@@ -226,88 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               
-              const SizedBox(height: 48),
-              
-              // Quick Testing accounts
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? AppTheme.surfaceDark : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark ? AppTheme.borderDark : Colors.grey.shade200,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.auto_awesome, color: AppTheme.accentColor, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Demo Quick Sign-In',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: AppTheme.primaryColor,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: authProvider.isLoading
-                                ? null
-                                : () => _quickLogin('student@pundra.edu', 'password123'),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppTheme.primaryColor),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: const Column(
-                              children: [
-                                Icon(Icons.school_outlined, size: 20, color: AppTheme.primaryColor),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Student View',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: authProvider.isLoading
-                                ? null
-                                : () => _quickLogin('admin@pundra.edu', 'password123'),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppTheme.accentColor),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: const Column(
-                              children: [
-                                Icon(Icons.admin_panel_settings_outlined, size: 20, color: AppTheme.accentColor),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Admin View',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.accentColor),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+
             ],
           ),
         ),

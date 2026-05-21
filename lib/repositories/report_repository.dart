@@ -8,6 +8,8 @@ abstract class ReportRepository {
   Future<ReportModel> createReport(ReportModel report);
   Future<ReportModel> upvoteReport(String reportId, String userId);
   Future<ReportModel> updateReportStatus(String reportId, ReportStatus status, String? adminNotes);
+  Future<ReportModel> updateReport(ReportModel updatedReport);
+  Future<void> deleteReport(String reportId);
   Stream<List<ReportModel>> watchReports();
 }
 
@@ -161,5 +163,31 @@ class MockReportRepository implements ReportRepository {
       return updatedReport;
     }
     throw Exception('Report not found');
+  }
+
+  @override
+  Future<ReportModel> updateReport(ReportModel updatedReport) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final index = _reports.indexWhere((r) => r.id == updatedReport.id);
+    if (index != -1) {
+      _reports[index] = updatedReport;
+      await _saveToStorage();
+      _reportsStreamController.add(List.from(_reports));
+      return updatedReport;
+    }
+    throw Exception('Report not found');
+  }
+
+  @override
+  Future<void> deleteReport(String reportId) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final initialLength = _reports.length;
+    _reports.removeWhere((r) => r.id == reportId);
+    if (_reports.length < initialLength) {
+      await _saveToStorage();
+      _reportsStreamController.add(List.from(_reports));
+    } else {
+      throw Exception('Report not found');
+    }
   }
 }

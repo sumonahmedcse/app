@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'repositories/service_locator.dart';
 import 'providers/auth_provider.dart';
@@ -12,17 +11,6 @@ import 'models/user_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  if (ServiceLocator.useFirebase) {
-    try {
-      // Tries to initialize standard default firebase options.
-      // If the user runs FlutterFire configure, this will connect automatically.
-      await Firebase.initializeApp();
-    } catch (e) {
-      debugPrint("Firebase failed to initialize. Make sure google-services.json is present. Error: $e");
-    }
-  }
-
   runApp(const MyApp());
 }
 

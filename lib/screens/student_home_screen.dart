@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../widgets/report_card.dart';
 import 'create_report_screen.dart';
 import 'login_screen.dart';
+import 'profile_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -85,6 +86,16 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
+            },
+            tooltip: 'My Profile',
+          ),
           IconButton(
             icon: const Icon(Icons.logout_outlined),
             onPressed: _handleLogout,
@@ -223,15 +234,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreateReportScreen()),
           );
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Report Issue'),
+        tooltip: 'Report Issue',
+        child: const Icon(Icons.add),
       ),
     );
   }

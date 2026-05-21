@@ -13,6 +13,25 @@ abstract class AuthRepository {
     required UserRole role,
   });
 
+  Future<void> addAdmin({
+    required String name,
+    required String email,
+    required String password,
+  });
+
+  Future<List<UserModel>> getAllUsers();
+  
+  Future<void> updateUser(UserModel updatedUser);
+  
+  Future<void> updateProfile({
+    required String oldEmail,
+    required UserModel updatedUser,
+    required String currentPassword,
+    String? newPassword,
+  });
+  
+  Future<void> deleteUser(String email);
+
   Future<UserModel?> signIn({
     required String email,
     required String password,
@@ -154,6 +173,148 @@ class MockAuthRepository implements AuthRepository {
     await prefs.setString(_currentUserKey, jsonEncode(newUser.toMap()));
     _authStreamController.add(_currentUser);
     return _currentUser;
+  }
+
+  @override
+  Future<void> addAdmin({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final prefs = await SharedPreferences.getInstance();
+    final usersStr = prefs.getString(_usersKey) ?? '{}';
+    final Map<String, dynamic> usersMap = Map<String, dynamic>.from(jsonDecode(usersStr));
+
+    if (usersMap.containsKey(email)) {
+      throw Exception('Email already registered');
+    }
+
+    final newUid = 'admin_${DateTime.now().millisecondsSinceEpoch}';
+    final newUser = UserModel(
+      uid: newUid,
+      name: name,
+      email: email,
+      studentId: '',
+      department: '',
+      role: UserRole.admin,
+    );
+
+    usersMap[email] = {
+      'user': newUser.toMap(),
+      'password': password,
+    };
+
+    await prefs.setString(_usersKey, jsonEncode(usersMap));
+  }
+
+  @override
+  Future<List<UserModel>> getAllUsers() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final prefs = await SharedPreferences.getInstance();
+    final usersStr = prefs.getString(_usersKey) ?? '{}';
+    final Map<String, dynamic> usersMap = jsonDecode(usersStr);
+
+    return usersMap.values.map((userData) {
+      return UserModel.fromMap(userData['user']);
+    }).toList();
+  }
+
+  @override
+  Future<void> updateUser(UserModel updatedUser) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final prefs = await SharedPreferences.getInstance();
+    final usersStr = prefs.getString(_usersKey) ?? '{}';
+    final Map<String, dynamic> usersMap = Map<String, dynamic>.from(jsonDecode(usersStr));
+
+    if (!usersMap.containsKey(updatedUser.email)) {
+      throw Exception('User not found');
+    }
+
+    // Preserve the password when updating user details
+    final existingPassword = usersMap[updatedUser.email]['password'];
+    usersMap[updatedUser.email] = {
+      'user': updatedUser.toMap(),
+      'password': existingPassword,
+    };
+
+    await prefs.setString(_usersKey, jsonEncode(usersMap));
+
+    // Update current user if the admin is updating their own profile
+    if (_currentUser?.email == updatedUser.email) {
+      _currentUser = updatedUser;
+      await prefs.setString(_currentUserKey, jsonEncode(updatedUser.toMap()));
+      _authStreamController.add(_currentUser);
+    }
+  }
+
+  @override
+  Future<void> updateProfile({
+    required String oldEmail,
+    required UserModel updatedUser,
+    required String currentPassword,
+    String? newPassword,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    final prefs = await SharedPreferences.getInstance();
+    final usersStr = prefs.getString(_usersKey) ?? '{}';
+    final Map<String, dynamic> usersMap = Map<String, dynamic>.from(jsonDecode(usersStr));
+
+    if (!usersMap.containsKey(oldEmail)) {
+      throw Exception('User not found');
+    }
+
+    // Verify current password
+    if (usersMap[oldEmail]['password'] != currentPassword) {
+      throw Exception('Incorrect current password');
+    }
+
+    // Check if changing email and if new email is already taken
+    if (oldEmail != updatedUser.email && usersMap.containsKey(updatedUser.email)) {
+      throw Exception('Email already in use');
+    }
+
+    final passToSave = (newPassword != null && newPassword.isNotEmpty) 
+        ? newPassword 
+        : currentPassword;
+
+    // If email changed, remove old key
+    if (oldEmail != updatedUser.email) {
+      usersMap.remove(oldEmail);
+    }
+
+    usersMap[updatedUser.email] = {
+      'user': updatedUser.toMap(),
+      'password': passToSave,
+    };
+
+    await prefs.setString(_usersKey, jsonEncode(usersMap));
+
+    // If updating own profile
+    if (_currentUser?.email == oldEmail || _currentUser?.email == updatedUser.email) {
+      _currentUser = updatedUser;
+      await prefs.setString(_currentUserKey, jsonEncode(updatedUser.toMap()));
+      _authStreamController.add(_currentUser);
+    }
+  }
+
+  @override
+  Future<void> deleteUser(String email) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final prefs = await SharedPreferences.getInstance();
+    final usersStr = prefs.getString(_usersKey) ?? '{}';
+    final Map<String, dynamic> usersMap = Map<String, dynamic>.from(jsonDecode(usersStr));
+
+    if (!usersMap.containsKey(email)) {
+      throw Exception('User not found');
+    }
+
+    if (_currentUser?.email == email) {
+      throw Exception('You cannot delete your own active account');
+    }
+
+    usersMap.remove(email);
+    await prefs.setString(_usersKey, jsonEncode(usersMap));
   }
 
   @override

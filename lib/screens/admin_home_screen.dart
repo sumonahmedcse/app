@@ -6,6 +6,8 @@ import '../models/report_model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/report_card.dart';
 import 'login_screen.dart';
+import 'admin_users_screen.dart';
+import 'profile_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -33,6 +35,81 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
+  }
+
+  void _showAddAdminDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add New Admin'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Full Name', prefixIcon: Icon(Icons.person_outline)),
+                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: 'Email Address', prefixIcon: Icon(Icons.email_outlined)),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: passwordController,
+                  decoration: const InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock_outline)),
+                  obscureText: true,
+                  validator: (val) => val == null || val.length < 6 ? 'Min 6 chars' : null,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                  final success = await authProvider.addAdmin(
+                    name: nameController.text.trim(),
+                    email: emailController.text.trim(),
+                    password: passwordController.text,
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? 'Admin Added Successfully' : (authProvider.errorMessage ?? 'Failed')),
+                        backgroundColor: success ? AppTheme.solvedColor : AppTheme.rejectedColor,
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentColor,
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('Add Admin'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -73,6 +150,31 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
+            },
+            tooltip: 'My Profile',
+          ),
+          IconButton(
+            icon: const Icon(Icons.people_outline),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminUsersScreen()),
+              );
+            },
+            tooltip: 'Manage Users',
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_add_outlined),
+            onPressed: () => _showAddAdminDialog(context),
+            tooltip: 'Add New Admin',
+          ),
           IconButton(
             icon: const Icon(Icons.logout_outlined),
             onPressed: _handleLogout,

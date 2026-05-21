@@ -80,6 +80,89 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> addAdmin({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      await _authRepository.addAdmin(
+        name: name,
+        email: email,
+        password: password,
+      );
+      return true;
+    } catch (e) {
+      _errorMessage = _cleanErrorMessage(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<UserModel>> fetchAllUsers() async {
+    try {
+      return await _authRepository.getAllUsers();
+    } catch (e) {
+      _errorMessage = _cleanErrorMessage(e.toString());
+      return [];
+    }
+  }
+
+  Future<bool> updateUser(UserModel updatedUser) async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      await _authRepository.updateUser(updatedUser);
+      return true;
+    } catch (e) {
+      _errorMessage = _cleanErrorMessage(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> updateProfile({
+    required String oldEmail,
+    required UserModel updatedUser,
+    required String currentPassword,
+    String? newPassword,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      await _authRepository.updateProfile(
+        oldEmail: oldEmail,
+        updatedUser: updatedUser,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return true;
+    } catch (e) {
+      _errorMessage = _cleanErrorMessage(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> deleteUser(String email) async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      await _authRepository.deleteUser(email);
+      return true;
+    } catch (e) {
+      _errorMessage = _cleanErrorMessage(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> signOut() async {
     _setLoading(true);
     try {

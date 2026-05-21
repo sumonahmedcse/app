@@ -141,6 +141,32 @@ class ReportProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateReport(ReportModel updatedReport) async {
+    _setLoading(true);
+    try {
+      await _reportRepository.updateReport(updatedReport);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> deleteReport(String reportId) async {
+    _setLoading(true);
+    try {
+      await _reportRepository.deleteReport(reportId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   // Filters management
   void setCategory(String category) {
     _selectedCategory = category;

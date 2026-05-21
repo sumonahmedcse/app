@@ -22,7 +22,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _studentIdController = TextEditingController();
   
-  UserRole _selectedRole = UserRole.student;
   String _selectedDepartment = 'CSE';
   
   bool _obscurePassword = true;
@@ -55,9 +54,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       name: _nameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
-      studentId: _selectedRole == UserRole.student ? _studentIdController.text.trim() : '',
-      department: _selectedRole == UserRole.student ? _selectedDepartment : '',
-      role: _selectedRole,
+      studentId: _studentIdController.text.trim(),
+      department: _selectedDepartment,
+      role: UserRole.student,
     );
 
     if (mounted) {
@@ -115,68 +114,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Role Selector
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppTheme.surfaceDark : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isDark ? AppTheme.borderDark : Colors.grey.shade200,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ChoiceChip(
-                          label: const Center(child: Text('Student')),
-                          selected: _selectedRole == UserRole.student,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() {
-                                _selectedRole = UserRole.student;
-                              });
-                            }
-                          },
-                          selectedColor: AppTheme.primaryColor,
-                          labelStyle: TextStyle(
-                            color: _selectedRole == UserRole.student
-                                ? Colors.white
-                                : (isDark ? Colors.white70 : Colors.black87),
-                            fontWeight: FontWeight.bold,
-                          ),
-                          backgroundColor: Colors.transparent,
-                          shape: const StadiumBorder(side: BorderSide.none),
-                          showCheckmark: false,
-                        ),
-                      ),
-                      Expanded(
-                        child: ChoiceChip(
-                          label: const Center(child: Text('Administrator')),
-                          selected: _selectedRole == UserRole.admin,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() {
-                                _selectedRole = UserRole.admin;
-                              });
-                            }
-                          },
-                          selectedColor: AppTheme.accentColor,
-                          labelStyle: TextStyle(
-                            color: _selectedRole == UserRole.admin
-                                ? (isDark ? Colors.black : Colors.white)
-                                : (isDark ? Colors.white70 : Colors.black87),
-                            fontWeight: FontWeight.bold,
-                          ),
-                          backgroundColor: Colors.transparent,
-                          shape: const StadiumBorder(side: BorderSide.none),
-                          showCheckmark: false,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
                 
                 // Name
                 TextFormField(
@@ -216,49 +153,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
                 
-                // Student Specific Fields
-                if (_selectedRole == UserRole.student) ...[
-                  // Student ID
-                  TextFormField(
-                    controller: _studentIdController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Student ID',
-                      prefixIcon: Icon(Icons.badge_outlined),
-                      hintText: 'e.g. 0322320105101047',
-                    ),
-                    validator: (value) {
-                      if (_selectedRole == UserRole.student && (value == null || value.isEmpty)) {
-                        return 'Please enter your student ID';
-                      }
-                      return null;
-                    },
+                // Student ID
+                TextFormField(
+                  controller: _studentIdController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Student ID',
+                    prefixIcon: Icon(Icons.badge_outlined),
+                    hintText: 'e.g. 0322320105101047',
                   ),
-                  const SizedBox(height: 16),
-                  
-                  // Department Dropdown
-                  DropdownButtonFormField<String>(
-                    value: _selectedDepartment,
-                    decoration: const InputDecoration(
-                      labelText: 'Department',
-                      prefixIcon: Icon(Icons.account_balance_outlined),
-                    ),
-                    items: _departments.map((dept) {
-                      return DropdownMenuItem<String>(
-                        value: dept == 'Civil Engineering' ? 'Civil' : dept, // Keep values short
-                        child: Text(dept),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedDepartment = val;
-                        });
-                      }
-                    },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your student ID';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                
+                // Department Dropdown
+                DropdownButtonFormField<String>(
+                  value: _selectedDepartment,
+                  decoration: const InputDecoration(
+                    labelText: 'Department',
+                    prefixIcon: Icon(Icons.account_balance_outlined),
                   ),
-                  const SizedBox(height: 16),
-                ],
+                  items: _departments.map((dept) {
+                    return DropdownMenuItem<String>(
+                      value: dept == 'Civil Engineering' ? 'Civil' : dept, // Keep values short
+                      child: Text(dept),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _selectedDepartment = val;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
                 
                 // Password
                 TextFormField(
@@ -325,12 +259,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     : ElevatedButton(
                         onPressed: _handleRegister,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _selectedRole == UserRole.student
-                              ? AppTheme.primaryColor
-                              : AppTheme.accentColor,
-                          foregroundColor: _selectedRole == UserRole.student
-                              ? Colors.white
-                              : Colors.black,
+                          backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
                         ),
                         child: const Text('Register'),
                       ),
